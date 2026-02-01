@@ -1,0 +1,7 @@
+{
+  "name": "Helper.az - Azerbaijan Service Marketplace",
+  "description": "A premium two-sided marketplace connecting homeowners with skilled professionals in Azerbaijan for plumbing, cleaning, electrical work, and more.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
