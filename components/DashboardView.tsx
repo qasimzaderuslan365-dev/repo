@@ -28,7 +28,7 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
                 className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-blue-50"
               />
               <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-              <p className="text-sm text-gray-500">{user.role === 'PROFESSIONAL' ? 'Mütəxəssis' : 'Müştəri'}</p>
+              <p className="text-sm text-gray-500">{user.role === 'PROFESSIONAL' ? t.proRole : t.customerRole}</p>
               {isPro && user.profession && (
                 <p className="mt-1 text-xs font-bold text-blue-600 uppercase tracking-tighter">{user.profession}</p>
               )}
@@ -37,7 +37,7 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
             {isPro && (
               <div className="space-y-6 pt-6 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-700">Status</span>
+                  <span className="text-sm font-bold text-gray-700">{t.status}</span>
                   <button 
                     onClick={() => onToggleAvailability?.(!user.isAvailable)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${user.isAvailable ? 'bg-green-500' : 'bg-gray-200'}`}
@@ -46,7 +46,7 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
                   </button>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-2xl">
-                  <p className="text-[10px] text-blue-600 font-bold uppercase mb-1">Reytinq</p>
+                  <p className="text-[10px] text-blue-600 font-bold uppercase mb-1">{language === 'az' ? 'Reytinq' : (language === 'en' ? 'Rating' : 'Рейтинг')}</p>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-black text-blue-800">{user.rating}</span>
                     <div className="flex text-orange-400">
@@ -59,8 +59,8 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
                   </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-2xl">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Tarif</p>
-                  <p className="text-xl font-black text-gray-900">{user.hourlyRate} AZN/saat</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">{language === 'az' ? 'Tarif' : (language === 'en' ? 'Rate' : 'Тариф')}</p>
+                  <p className="text-xl font-black text-gray-900">{user.hourlyRate} {t.azn}/{language === 'en' ? 'hr' : (language === 'az' ? 'saat' : 'час')}</p>
                 </div>
               </div>
             )}
@@ -72,7 +72,7 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
               >
                 {t.editProfile}
               </button>
-              <button className="w-full py-3 px-4 text-left text-sm font-semibold rounded-xl hover:bg-gray-50 text-gray-700">Təhlükəsizlik</button>
+              <button className="w-full py-3 px-4 text-left text-sm font-semibold rounded-xl hover:bg-gray-50 text-gray-700">{t.security}</button>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              {isPro ? 'Gələn təkliflər' : 'Mənim müraciətlərim'}
+              {isPro ? t.incomingOffers : t.myRequests}
             </h3>
             
             <div className="space-y-4">
@@ -97,26 +97,26 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
                         </span>
                         <span className="text-xs text-gray-400 font-medium">{offer.date} • {offer.time}</span>
                       </div>
-                      <h4 className="font-bold text-gray-900">{isPro ? 'Müştəri: ' + offer.customerId : offer.professionalName} — {offer.serviceType}</h4>
+                      <h4 className="font-bold text-gray-900">{isPro ? (t.customerRole + ': ' + offer.customerId) : offer.professionalName} — {offer.serviceType}</h4>
                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offer.description}</p>
                     </div>
                     <div className="flex items-center gap-4 sm:flex-col sm:items-end justify-between">
-                       <p className="text-xl font-black text-blue-600">{offer.price} AZN</p>
+                       <p className="text-xl font-black text-blue-600">{offer.price} {t.azn}</p>
                        <div className="flex gap-2">
                          {isPro && offer.status === 'PENDING' && (
                            <>
-                             <button className="px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg">Qəbul et</button>
-                             <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">İmtina</button>
+                             <button className="px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg">{t.accept}</button>
+                             <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">{t.decline}</button>
                            </>
                          )}
-                         <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">Detallar</button>
+                         <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">{t.details}</button>
                        </div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-12">
-                   <p className="text-gray-400 italic">Hələ ki heç bir aktivlik yoxdur.</p>
+                   <p className="text-gray-400 italic">{t.noActivity}</p>
                 </div>
               )}
             </div>

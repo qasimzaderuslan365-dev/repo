@@ -6,7 +6,7 @@ export interface Profile {
   name: string;
   email?: string;
   role: UserRole;
-  profession?: string; // Specific field for professionals
+  profession?: string;
   skills: string[];
   bio: string;
   hourlyRate: number;
@@ -14,9 +14,10 @@ export interface Profile {
   reviewsCount: number;
   avatar: string;
   location: string;
-  availability: string[]; // e.g., ["Monday", "Tuesday"]
+  availability: string[];
   joinedDate: string;
-  isAvailable?: boolean; // For professionals
+  isAvailable?: boolean;
+  onboarding_completed?: boolean;
 }
 
 export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED';

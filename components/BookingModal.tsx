@@ -30,7 +30,7 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
         <div className="px-8 py-6 border-b flex justify-between items-center bg-gray-50">
           <div>
             <h2 className="text-xl font-bold text-gray-900">{t.makeOffer}</h2>
-            <p className="text-sm text-gray-500">Mütəxəssis: {pro.name}</p>
+            <p className="text-sm text-gray-500">{t.proRole}: {pro.name}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,7 +40,6 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
         </div>
 
         <div className="overflow-y-auto p-8 space-y-8">
-          {/* Professional Context Section */}
           <div className="flex gap-4 items-start bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
             <img 
               src={pro.avatar} 
@@ -50,27 +49,27 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
             <div>
               <h3 className="font-bold text-gray-900">{pro.name}</h3>
               <p className="text-xs text-gray-600 leading-relaxed mt-1 italic">
-                {pro.bio || "Hər növ sifarişləri yüksək keyfiyyətlə yerinə yetirirəm."}
+                {pro.bio || (language === 'en' ? "Providing high-quality services for all requests." : "Hər növ sifarişləri yüksək keyfiyyətlə yerinə yetirirəm.")}
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">İşin təsviri</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t.jobDesc}</label>
               <textarea
                 required
                 rows={3}
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                placeholder="Nə xidmət lazımdır? Ətraflı yazın..."
+                placeholder={language === 'en' ? 'Describe what you need...' : 'Nə xidmət lazımdır? Ətraflı yazın...'}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Tarix</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t.dateLabel}</label>
                 <input
                   type="date"
                   required
@@ -80,7 +79,7 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Vaxt (08:00 - 20:00)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t.timeLabel} (08:00 - 20:00)</label>
                 <input
                   type="time"
                   required
@@ -94,13 +93,13 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Ünvan</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t.addressLabel}</label>
               <input
                 type="text"
                 required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Məsələn: Nizami küçəsi 14, mənzil 20"
+                placeholder={language === 'en' ? 'e.g. Nizami street 14, apartment 20' : 'Məsələn: Nizami küçəsi 14, mənzil 20'}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               />
             </div>
@@ -111,13 +110,13 @@ export const BookingModal: React.FC<Props> = ({ pro, language, onClose, onSubmit
                 onClick={onClose}
                 className="flex-1 px-6 py-3 rounded-xl border border-gray-200 font-bold text-gray-600 hover:bg-gray-50 transition-colors text-sm"
               >
-                Ləğv et
+                {t.cancel}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 text-sm"
               >
-                Göndər
+                {t.send}
               </button>
             </div>
           </form>
