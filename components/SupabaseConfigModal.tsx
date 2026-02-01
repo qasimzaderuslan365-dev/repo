@@ -32,7 +32,7 @@ export const SupabaseConfigModal: React.FC<Props> = ({ onClose }) => {
 
           <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl mb-8">
             <p className="text-sm text-blue-800 leading-relaxed font-medium">
-              Bu məlumatları Supabase Dashboard-da <strong>Project Settings > API</strong> bölməsindən tapa bilərsiniz.
+              Bu məlumatları Supabase Dashboard-da <strong>Project Settings &gt; API</strong> bölməsindən tapa bilərsiniz.
             </p>
           </div>
 
