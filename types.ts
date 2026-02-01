@@ -20,20 +20,22 @@ export interface Profile {
   onboarding_completed?: boolean;
 }
 
-export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED';
+export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED' | 'CANCELLED';
 
 export interface Offer {
   id: string;
-  customerId: string;
-  professionalId: string;
-  professionalName: string;
-  serviceType: string;
+  customer_id: string;
+  professional_id: string;
+  professional_name?: string;
+  customer_name?: string;
+  service_type: string;
   description: string;
   price: number;
   date: string;
   time: string;
   status: OfferStatus;
   location: string;
+  created_at?: string;
 }
 
 export interface Review {

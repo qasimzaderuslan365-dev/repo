@@ -43,20 +43,22 @@ export const AuthView: React.FC<Props> = ({ language, onSuccess, onCancel, initi
         });
 
         if (signUpError) {
-          // Specific handling for rate limit errors common in Supabase free tier
-          if (signUpError.message.toLowerCase().includes('rate limit') || signUpError.status === 429) {
-            throw new Error(
-              language === 'az' 
-                ? 'Çox sayda müraciət aşkarlandı. Zəhmət olmasa bir neçə dəqiqə gözləyin və yenidən cəhd edin.' 
-                : (language === 'en' 
-                    ? 'Too many attempts. Please wait a few minutes before trying again.' 
-                    : 'Слишком много попыток. Пожалуйста, подождите несколько минут.')
-            );
+          // Detect Supabase Free Tier rate limits
+          if (signUpError.message.toLowerCase().includes('rate limit') || 
+              signUpError.message.toLowerCase().includes('email rate limit') ||
+              signUpError.status === 429) {
+            
+            const rateLimitMsg = language === 'az' 
+              ? 'Supabase (Free Tier) limiti keçildi. Zəhmət olmasa 1 saat gözləyin və ya başqa e-poçt ilə yoxlayın. Bu, təhlükəsizlik məqsədilə qoyulan məhdudiyyətdir.' 
+              : (language === 'en' 
+                  ? 'Supabase Free Tier rate limit exceeded. Please wait about 1 hour or try a different email/network. This is a security measure.' 
+                  : 'Лимит Supabase исчерпан. Пожалуйста, подождите около часа или используйте другую почту.');
+            
+            throw new Error(rateLimitMsg);
           }
           throw signUpError;
         }
         
-        // Supabase behavior: if email confirmation is on, data.user exists but session might be null
         setVerificationSent(true);
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -68,10 +70,8 @@ export const AuthView: React.FC<Props> = ({ language, onSuccess, onCancel, initi
           if (signInError.message.toLowerCase().includes('rate limit') || signInError.status === 429) {
             throw new Error(
               language === 'az' 
-                ? 'Giriş limiti keçildi. Zəhmət olmasa bir az sonra yenidən cəhd edin.' 
-                : (language === 'en' 
-                    ? 'Login rate limit exceeded. Please try again shortly.' 
-                    : 'Лимит попыток входа исчерпан. Попробуйте позже.')
+                ? 'Giriş limiti keçildi. Bir az sonra yenidən cəhd edin.' 
+                : 'Login rate limit exceeded. Please try again shortly.'
             );
           }
           throw signInError;
@@ -124,7 +124,7 @@ export const AuthView: React.FC<Props> = ({ language, onSuccess, onCancel, initi
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-medium animate-shake">
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-medium animate-shake leading-relaxed">
               {error}
             </div>
           )}

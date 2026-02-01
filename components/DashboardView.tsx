@@ -15,108 +15,158 @@ export const DashboardView: React.FC<Props> = ({ user, language, offers, onToggl
   const t = I18N[language];
   const isPro = user.role === 'PROFESSIONAL';
 
+  const stats = isPro ? [
+    { label: t.activeJobs, value: offers.filter(o => o.status === 'ACCEPTED').length, color: 'blue' },
+    { label: t.completedJobs, value: offers.filter(o => o.status === 'COMPLETED').length, color: 'green' },
+    { label: t.profileViews, value: '128', color: 'orange' }
+  ] : [
+    { label: t.myRequests, value: offers.length, color: 'blue' },
+    { label: t.completedJobs, value: offers.filter(o => o.status === 'COMPLETED').length, color: 'green' }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Profile Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <div className="text-center mb-6">
-              <img 
-                src={user.avatar} 
-                alt={user.name} 
-                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-blue-50"
-              />
-              <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-              <p className="text-sm text-gray-500">{user.role === 'PROFESSIONAL' ? t.proRole : t.customerRole}</p>
-              {isPro && user.profession && (
-                <p className="mt-1 text-xs font-bold text-blue-600 uppercase tracking-tighter">{user.profession}</p>
-              )}
+      <div className="flex flex-col md:flex-row gap-10">
+        
+        {/* Left: Enhanced Sidebar */}
+        <div className="w-full md:w-80 shrink-0">
+          <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 p-8 sticky top-28">
+            <div className="text-center">
+              <div className="relative inline-block">
+                <img 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  className="w-28 h-28 rounded-[32px] mx-auto mb-4 object-cover border-4 border-white shadow-xl"
+                />
+                {isPro && (
+                  <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white shadow-sm ${user.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                )}
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">{user.name}</h2>
+              <div className="mt-1 inline-flex items-center px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                {isPro ? t.proRole : t.customerRole}
+              </div>
             </div>
 
             {isPro && (
-              <div className="space-y-6 pt-6 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-700">{t.status}</span>
-                  <button 
-                    onClick={() => onToggleAvailability?.(!user.isAvailable)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${user.isAvailable ? 'bg-green-500' : 'bg-gray-200'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.isAvailable ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
+              <div className="mt-8 space-y-4 pt-8 border-t border-gray-100">
+                <div className="flex items-center justify-between group cursor-pointer" onClick={() => onToggleAvailability?.(!user.isAvailable)}>
+                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{user.isAvailable ? t.availabilityText : t.notAvailableText}</span>
+                   <button className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${user.isAvailable ? 'bg-blue-600' : 'bg-gray-200'}`}>
+                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.isAvailable ? 'translate-x-6' : 'translate-x-1'}`} />
+                   </button>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-2xl">
-                  <p className="text-[10px] text-blue-600 font-bold uppercase mb-1">{language === 'az' ? 'Reytinq' : (language === 'en' ? 'Rating' : 'Рейтинг')}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-blue-800">{user.rating}</span>
-                    <div className="flex text-orange-400">
-                      {[1,2,3,4,5].map(s => (
-                        <svg key={s} className={`h-4 w-4 fill-current ${s > Math.floor(user.rating) ? 'opacity-30' : ''}`} viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
+                
+                <div className="p-5 bg-gray-50 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">{t.hourlyRate}</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-gray-900">{user.hourlyRate}</span>
+                    <span className="text-sm font-bold text-gray-400">{t.azn}/saat</span>
                   </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-2xl">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">{language === 'az' ? 'Tarif' : (language === 'en' ? 'Rate' : 'Тариф')}</p>
-                  <p className="text-xl font-black text-gray-900">{user.hourlyRate} {t.azn}/{language === 'en' ? 'hr' : (language === 'az' ? 'saat' : 'час')}</p>
                 </div>
               </div>
             )}
-            
-            <div className="mt-8 space-y-2">
+
+            <div className="mt-8 space-y-3">
               <button 
                 onClick={onEditProfile}
-                className="w-full py-3 px-4 text-left text-sm font-bold rounded-xl bg-gray-50 text-blue-600 hover:bg-blue-50 transition-colors"
+                className="w-full py-4 px-6 text-sm font-black rounded-2xl bg-gray-900 text-white hover:bg-black transition-all shadow-lg shadow-gray-200 active:scale-95"
               >
                 {t.editProfile}
               </button>
-              <button className="w-full py-3 px-4 text-left text-sm font-semibold rounded-xl hover:bg-gray-50 text-gray-700">{t.security}</button>
+              <button className="w-full py-4 px-6 text-sm font-bold rounded-2xl border-2 border-gray-100 text-gray-500 hover:bg-gray-50 transition-all">
+                {t.security}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Right: Activity Content */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              {isPro ? t.incomingOffers : t.myRequests}
-            </h3>
-            
-            <div className="space-y-4">
-              {offers.length > 0 ? (
-                offers.map(offer => (
-                  <div key={offer.id} className="p-5 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all flex flex-col sm:flex-row justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          offer.status === 'PENDING' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600'
-                        }`}>
-                          {offer.status}
-                        </span>
-                        <span className="text-xs text-gray-400 font-medium">{offer.date} • {offer.time}</span>
-                      </div>
-                      <h4 className="font-bold text-gray-900">{isPro ? (t.customerRole + ': ' + offer.customerId) : offer.professionalName} — {offer.serviceType}</h4>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offer.description}</p>
-                    </div>
-                    <div className="flex items-center gap-4 sm:flex-col sm:items-end justify-between">
-                       <p className="text-xl font-black text-blue-600">{offer.price} {t.azn}</p>
-                       <div className="flex gap-2">
-                         {isPro && offer.status === 'PENDING' && (
-                           <>
-                             <button className="px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg">{t.accept}</button>
-                             <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">{t.decline}</button>
-                           </>
-                         )}
-                         <button className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg">{t.details}</button>
-                       </div>
-                    </div>
+        {/* Right: Modern Main Content */}
+        <div className="flex-1 space-y-8">
+          
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {stats.map((stat, i) => (
+              <div key={i} className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm group hover:border-blue-200 transition-all">
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-3">{stat.label}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-4xl font-black text-gray-900">{stat.value}</span>
+                  <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
                   </div>
-                ))
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Activity List */}
+          <div className="bg-white rounded-[48px] shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-10 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                {isPro ? t.incomingOffers : t.myRequests}
+              </h3>
+              <div className="flex gap-2">
+                <button className="px-4 py-2 bg-gray-50 text-gray-400 text-xs font-black rounded-xl uppercase tracking-widest hover:text-gray-900 transition-colors">Filter</button>
+                <button className="px-4 py-2 bg-gray-50 text-gray-400 text-xs font-black rounded-xl uppercase tracking-widest hover:text-gray-900 transition-colors">Export</button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              {offers.length > 0 ? (
+                <div className="space-y-4">
+                  {offers.map(offer => (
+                    <div key={offer.id} className="p-8 rounded-[32px] bg-gray-50/50 border border-transparent hover:border-blue-100 hover:bg-white transition-all flex flex-col md:flex-row justify-between gap-6 group">
+                      <div className="flex gap-6">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                          offer.status === 'PENDING' ? 'bg-yellow-100 text-yellow-600' : 
+                          offer.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                        }`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                             <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                               offer.status === 'PENDING' ? 'bg-yellow-500 text-white' : 
+                               offer.status === 'ACCEPTED' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
+                             }`}>
+                               {offer.status}
+                             </span>
+                             <span className="text-[11px] font-bold text-gray-400">{offer.date} • {offer.time}</span>
+                          </div>
+                          <h4 className="text-xl font-black text-gray-900 mb-2">{offer.service_type}</h4>
+                          <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-lg">{offer.description}</p>
+                          <div className="mt-4 flex items-center gap-4 text-xs font-bold text-gray-400">
+                             <div className="flex items-center gap-1.5">
+                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                               {offer.location}
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-row md:flex-col items-center md:items-end justify-between shrink-0">
+                         <div className="text-3xl font-black text-blue-600">{offer.price} <span className="text-sm">{t.azn}</span></div>
+                         <div className="flex gap-2">
+                           {isPro && offer.status === 'PENDING' && (
+                             <button className="px-6 py-3 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">{t.accept}</button>
+                           )}
+                           <button className="px-6 py-3 bg-white border border-gray-100 text-gray-900 text-xs font-black rounded-xl hover:bg-gray-50 transition-all">{t.details}</button>
+                         </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="text-center py-12">
-                   <p className="text-gray-400 italic">{t.noActivity}</p>
+                <div className="py-24 text-center">
+                   <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                   </div>
+                   <p className="text-gray-400 font-bold italic">{t.noActivity}</p>
                 </div>
               )}
             </div>
