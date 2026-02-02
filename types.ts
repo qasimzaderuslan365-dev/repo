@@ -18,9 +18,11 @@ export interface Profile {
   joinedDate: string;
   isAvailable?: boolean;
   onboarding_completed?: boolean;
+  // Added isVerified to resolve property access errors in DashboardView
+  isVerified?: boolean;
 }
 
-export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'COMPLETED' | 'CANCELLED';
+export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'PAID' | 'COMPLETED' | 'CANCELLED';
 
 export interface Offer {
   id: string;
@@ -36,6 +38,17 @@ export interface Offer {
   status: OfferStatus;
   location: string;
   created_at?: string;
+}
+
+export interface Transaction {
+  id: string;
+  offer_id: string;
+  customer_id: string;
+  professional_id: string;
+  amount: number;
+  status: 'pending' | 'completed' | 'refunded';
+  stripe_payment_intent_id?: string;
+  created_at: string;
 }
 
 export interface Review {
