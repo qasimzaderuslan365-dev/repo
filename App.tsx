@@ -65,8 +65,6 @@ const App: React.FC = () => {
       
       if (data && !error) {
         setCurrentUser(mapProfile(data));
-      } else if (error && error.code === 'PGRST116') {
-        console.warn("Profile not found for ID:", userId);
       }
     } catch (e) {
       console.error("Fetch profile failed", e);
@@ -78,10 +76,9 @@ const App: React.FC = () => {
     let isMounted = true;
     
     const init = async () => {
-      // 1. Detect if we just returned from an email confirmation link
-      // Supabase often puts access_token in the hash
+      // 1. Detect if we just returned from an email confirmation link via hash
       const hash = window.location.hash;
-      if (hash && (hash.includes('access_token=') || hash.includes('type=recovery'))) {
+      if (hash && (hash.includes('access_token=') || hash.includes('type=signup'))) {
         if (isMounted) setView('VERIFIED');
       }
 
@@ -139,11 +136,9 @@ const App: React.FC = () => {
         throw prosError;
       }
 
-      if (prosData && prosData.length > 0) {
+      if (prosData) {
         setPros(prosData.map(mapProfile));
         setDbError(null);
-      } else {
-        setPros(MOCK_PROFILES);
       }
 
       if (currentUser) {
@@ -227,8 +222,6 @@ const App: React.FC = () => {
       });
 
       if (error) throw error;
-
-      alert(language === 'az' ? 'Sifariş uğurla göndərildi!' : 'Order sent successfully!');
       setSelectedProId(null);
       fetchMarketplaceData();
       setView('DASHBOARD');
@@ -240,90 +233,71 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       if (supabase) {
-        // Global scope ensures all sessions are cleared across devices if needed
         await supabase.auth.signOut({ scope: 'global' });
       }
     } catch (e) {
       console.error("Logout error", e);
     } finally {
-      // Clear all local auth state
       setCurrentUser(null);
       setView('HOME');
-      // Clear Supabase local storage manually to be safe
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('sb-')) localStorage.removeItem(key);
       });
-      // Force reload to completely reset application context
       window.location.href = '/';
     }
   };
 
-  const handleOnboardingComplete = (updated: Profile) => {
-    setCurrentUser(updated);
-    setView('HOME');
-  };
-
   const needsOnboarding = initialized && currentUser && !currentUser.onboarding_completed;
 
-  if (!initialized) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-      <div className="flex flex-col items-center gap-6">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-blue-100 rounded-full"></div>
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0"></div>
-        </div>
-        <div className="text-center">
-          <p className="font-black text-gray-900 text-sm tracking-tighter uppercase mb-1">Helper.az</p>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] animate-pulse">Yüklənir...</p>
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-100 rounded-full"></div>
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0"></div>
+          </div>
+          <div className="text-center">
+            <p className="font-black text-gray-900 text-sm tracking-tighter uppercase mb-1">Helper.az</p>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] animate-pulse">Yüklənir...</p>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   if (view === 'VERIFIED') {
     return <EmailVerifiedView language={language} onContinue={() => { setView('AUTH'); setAuthMode('LOGIN'); window.location.hash = ''; }} />;
   }
 
   if (needsOnboarding) {
-    return <OnboardingView user={currentUser} language={language} onComplete={handleOnboardingComplete} />;
+    return <OnboardingView user={currentUser} language={language} onComplete={(updated) => { setCurrentUser(updated); setView('HOME'); }} />;
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {dbError && (
         <div className="bg-red-600 text-white text-center py-3 px-4 text-xs font-black animate-pulse sticky top-0 z-[100] shadow-lg flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
           {dbError}
         </div>
       )}
 
-      {/* Navigation Bar */}
-      <nav className="bg-white/95 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40 transition-all">
+      <nav className="bg-white/95 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center gap-10">
               <div className="flex items-center cursor-pointer group" onClick={() => setView('HOME')}>
-                <div className="bg-blue-600 w-10 h-10 rounded-xl text-white font-black text-xl flex items-center justify-center shadow-lg shadow-blue-200 group-hover:rotate-6 transition-transform">H</div>
+                <div className="bg-blue-600 w-10 h-10 rounded-xl text-white font-black text-xl flex items-center justify-center shadow-lg">H</div>
                 <span className="ml-3 text-2xl font-black tracking-tight text-gray-900">Helper<span className="text-blue-600">.az</span></span>
               </div>
               
               <div className="hidden lg:flex gap-6 items-center border-l border-gray-100 pl-10">
-                <button 
-                  onClick={() => setView('HOME')} 
-                  className={`text-sm font-black tracking-wide transition-all uppercase px-4 py-2 rounded-xl ${view === 'HOME' ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'}`}
-                >
-                  {t.home}
-                </button>
+                <button onClick={() => setView('HOME')} className={`text-sm font-black tracking-wide uppercase px-4 py-2 rounded-xl ${view === 'HOME' ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-900'}`}>{t.home}</button>
                 <a href="#how-it-works" className="text-sm font-black tracking-wide text-gray-400 hover:text-gray-900 uppercase px-4 py-2">{t.howItWorks}</a>
-                <a href="#contact" className="text-sm font-black tracking-wide text-gray-400 hover:text-gray-900 uppercase px-4 py-2">{t.contact}</a>
-                {currentUser && (
-                  <button 
-                    onClick={() => setView('DASHBOARD')} 
-                    className={`text-sm font-black tracking-wide transition-all uppercase px-4 py-2 rounded-xl ${view === 'DASHBOARD' ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'}`}
-                  >
-                    {t.panel}
-                  </button>
-                )}
+                {currentUser && <button onClick={() => setView('DASHBOARD')} className={`text-sm font-black tracking-wide uppercase px-4 py-2 rounded-xl ${view === 'DASHBOARD' ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-900'}`}>{t.panel}</button>}
               </div>
             </div>
             
@@ -331,25 +305,19 @@ const App: React.FC = () => {
               <LanguageSelector current={language} onChange={setLanguage} />
               {currentUser ? (
                 <div className="flex items-center gap-4 pl-6 border-l border-gray-100">
-                  <div className="hidden sm:block text-right">
-                    <p className="text-xs font-black text-gray-900 leading-none mb-1">{currentUser.name}</p>
-                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{currentUser.role === 'PROFESSIONAL' ? t.proRole : t.customerRole}</p>
-                  </div>
-                  <button onClick={() => setView('PROFILE')} className="w-12 h-12 rounded-2xl border-2 border-gray-50 p-0.5 overflow-hidden ring-2 ring-transparent hover:ring-blue-100 transition-all shadow-md">
+                  <button onClick={() => setView('PROFILE')} className="w-12 h-12 rounded-2xl border-2 border-gray-50 p-0.5 overflow-hidden shadow-md">
                     <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover rounded-[14px]" />
                   </button>
-                  <button 
-                    onClick={handleLogout} 
-                    className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                    title="Logout"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  <button onClick={handleLogout} className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-600 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <button onClick={() => { setAuthMode('LOGIN'); setView('AUTH'); }} className="text-sm font-bold text-gray-600 hover:text-gray-900 px-4 py-2">{t.login}</button>
-                  <button onClick={() => { setAuthMode('SIGNUP'); setView('AUTH'); }} className="bg-blue-600 text-white text-sm font-bold px-6 py-3 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95">{t.becomePro}</button>
+                  <button onClick={() => { setAuthMode('LOGIN'); setView('AUTH'); }} className="text-sm font-bold text-gray-600 px-4 py-2">{t.login}</button>
+                  <button onClick={() => { setAuthMode('SIGNUP'); setView('AUTH'); }} className="bg-blue-600 text-white text-sm font-bold px-6 py-3 rounded-2xl shadow-xl">{t.becomePro}</button>
                 </div>
               )}
             </div>
@@ -357,37 +325,19 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="animate-in fade-in duration-700">
+      <main>
         {view === 'HOME' && (
           <>
             <SearchHero language={language} onSearch={handleSearch} />
-            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-                <div>
-                  <h2 className="text-4xl font-black text-gray-900 tracking-tight">{t.popularCategories}</h2>
-                  <p className="text-gray-500 mt-2 font-medium">{language === 'en' ? 'Verified experts available for immediate hire.' : 'Yoxlanılmış mütəxəssislər xidmətinizdədir.'}</p>
-                </div>
-                {isSearching && (
-                  <div className="flex items-center gap-3 bg-blue-50 px-5 py-2.5 rounded-2xl text-blue-600 text-sm font-bold animate-pulse border border-blue-100">
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    {t.geminiSearching}
-                  </div>
-                )}
-              </div>
+              <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-10">{t.popularCategories}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {pros.length > 0 ? pros.map(pro => (
+                {pros.map(pro => (
                   <ProCard key={pro.id} pro={pro} language={language} onSelect={(id) => setSelectedProId(id)} />
-                )) : (
-                  <div className="col-span-full py-32 text-center bg-white rounded-[48px] border-2 border-dashed border-gray-100">
-                    <h3 className="text-2xl font-black text-gray-900">{t.noProsFound}</h3>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
-
             <LandingSections language={language} />
-            
             <Footer language={language} onNavigate={setView} />
           </>
         )}
@@ -400,16 +350,7 @@ const App: React.FC = () => {
             isRefreshing={isRefreshing}
             onRefresh={fetchMarketplaceData}
             onUpdateOfferStatus={handleUpdateOfferStatus}
-            onStartPayment={(offer) => {
-              setActiveOfferForPayment(offer);
-              setView('CHECKOUT');
-            }}
-            onToggleAvailability={async (val) => {
-               if (supabase) {
-                 await supabase.from('profiles').update({ is_available: val }).eq('id', currentUser.id);
-                 setCurrentUser({...currentUser, isAvailable: val});
-               }
-            }} 
+            onStartPayment={(offer) => { setActiveOfferForPayment(offer); setView('CHECKOUT'); }}
             onEditProfile={() => setView('PROFILE_EDIT')} 
           />
         )}
@@ -419,26 +360,21 @@ const App: React.FC = () => {
             offer={activeOfferForPayment} 
             user={currentUser} 
             language={language} 
-            onSuccess={() => {
-              fetchMarketplaceData();
-              setView('DASHBOARD');
-            }} 
+            onSuccess={() => { fetchMarketplaceData(); setView('DASHBOARD'); }} 
             onCancel={() => setView('DASHBOARD')} 
           />
         )}
 
         {view === 'PROFILE' && currentUser && (
           <div className="max-w-4xl mx-auto px-4 py-12">
-            <div className="bg-white rounded-[48px] overflow-hidden shadow-2xl border border-white">
-              <div className="h-48 bg-gradient-to-br from-blue-600 to-indigo-800 relative"></div>
-              <div className="px-12 pb-16 -mt-24 text-center relative z-10">
-                <div className="inline-block relative">
-                   <img src={currentUser.avatar} alt={currentUser.name} className="w-44 h-44 rounded-[56px] object-cover border-[10px] border-white shadow-2xl" />
-                </div>
-                <h2 className="text-4xl font-black text-gray-900 tracking-tight mt-6">{currentUser.name}</h2>
+            <div className="bg-white rounded-[48px] overflow-hidden shadow-2xl">
+              <div className="h-48 bg-gradient-to-br from-blue-600 to-indigo-800"></div>
+              <div className="px-12 pb-16 -mt-24 text-center">
+                <img src={currentUser.avatar} alt={currentUser.name} className="w-44 h-44 rounded-[56px] object-cover border-[10px] border-white shadow-2xl mx-auto" />
+                <h2 className="text-4xl font-black text-gray-900 mt-6">{currentUser.name}</h2>
                 <div className="mt-16 flex justify-center gap-6">
-                   <button onClick={() => setView('PROFILE_EDIT')} className="px-10 py-5 bg-gray-900 text-white font-black rounded-3xl hover:bg-black transition-all shadow-xl active:scale-95 text-xs uppercase tracking-widest">{t.editProfile}</button>
-                   <button onClick={() => setView('HOME')} className="px-10 py-5 bg-white border-2 border-gray-100 text-gray-500 font-black rounded-3xl hover:bg-gray-50 transition-all text-xs uppercase tracking-widest">{t.home}</button>
+                   <button onClick={() => setView('PROFILE_EDIT')} className="px-10 py-5 bg-gray-900 text-white font-black rounded-3xl uppercase tracking-widest text-xs">{t.editProfile}</button>
+                   <button onClick={() => setView('HOME')} className="px-10 py-5 bg-white border-2 border-gray-100 text-gray-500 font-black rounded-3xl uppercase tracking-widest text-xs">{t.home}</button>
                 </div>
               </div>
             </div>
@@ -448,13 +384,7 @@ const App: React.FC = () => {
 
         {view === 'PROFILE_EDIT' && currentUser && (
           <div className="max-w-7xl mx-auto px-4">
-            <ProfileEditView 
-              user={currentUser} 
-              language={language} 
-              onSave={(updated) => { setCurrentUser(updated); setView('PROFILE'); }} 
-              onCancel={() => setView('PROFILE')} 
-            />
-            <Footer language={language} onNavigate={setView} />
+            <ProfileEditView user={currentUser} language={language} onSave={(updated) => { setCurrentUser(updated); setView('PROFILE'); }} onCancel={() => setView('PROFILE')} />
           </div>
         )}
 

@@ -16,7 +16,7 @@ export const EmailVerifiedView: React.FC<Props> = ({ language, onContinue }) => 
       <div className="max-w-md w-full text-center animate-in fade-in zoom-in-95 duration-700">
         <div className="relative inline-block mb-10">
           <div className="absolute inset-0 bg-green-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-          <div className="relative w-28 h-28 bg-green-500 text-white rounded-[40px] flex items-center justify-center mx-auto shadow-2xl shadow-green-200 group transform hover:rotate-6 transition-transform">
+          <div className="relative w-28 h-28 bg-green-500 text-white rounded-[40px] flex items-center justify-center mx-auto shadow-2xl shadow-green-200 transform hover:rotate-6 transition-transform">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
@@ -32,7 +32,7 @@ export const EmailVerifiedView: React.FC<Props> = ({ language, onContinue }) => 
         
         <button 
           onClick={onContinue}
-          className="w-full py-5 bg-gray-900 text-white font-black rounded-3xl shadow-2xl shadow-gray-200 hover:bg-black transition-all active:scale-95 uppercase tracking-widest text-xs"
+          className="w-full py-5 bg-gray-900 text-white font-black rounded-3xl shadow-2xl hover:bg-black transition-all active:scale-95 uppercase tracking-widest text-xs"
         >
           {t.goToLogin}
         </button>
